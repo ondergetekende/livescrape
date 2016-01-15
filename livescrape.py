@@ -84,13 +84,15 @@ class ScrapedPage(object):
     _scrape_doc = None
     scrape_url = None
     scrape_args = []
+    scrape_arg_defaults = {}
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *pargs, **kwargs):
         scrape_url = kwargs.pop("scrape_url", None)
         if scrape_url:
-            assert not args and not kwargs, \
+            assert not pargs and not kwargs, \
                 "scraped_url is mutually exclusive with other arguments"
             self.scrape_url = scrape_url
+            self.scrape_args = {}
 
         else:
             # We can't scrape if we don't actually have a url configured
@@ -98,9 +100,12 @@ class ScrapedPage(object):
                 raise ValueError("%s.scrape_url needs to be defined" %
                                  type(self).__name__)
 
-            kwargs.update(zip(self.scrape_args, args))
+            arguments = dict(self.scrape_arg_defaults)
+            arguments.update(kwargs)
+            arguments.update(zip(self.scrape_args, pargs))
+            self.scrape_args = arguments
 
-            self.scrape_url = self.scrape_url % kwargs
+            self.scrape_url = self.scrape_url % arguments
 
     def scrape_fetch(self, url):
         return requests.get(url).text
