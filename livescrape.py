@@ -113,7 +113,7 @@ class ScrapedPage(object):
     def _get_value(self, property_scraper):
         if self._scrape_doc is None:
             page = self.scrape_fetch(self.scrape_url)
-            self._scrape_doc = lxml.html.document_fromstring(page)
+            self._scrape_doc = lxml.html.fromstring(page)
 
         return property_scraper.get(self._scrape_doc, scraped_page=self)
 
