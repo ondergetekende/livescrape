@@ -5,7 +5,8 @@ class GithubProjectpage(ScrapedPage):
     scrape_url = "https://github.com/%(username)s/%(projectname)s/"
     scrape_args = ("username", "projectname")
 
-    description = Css(".repository-meta-content")
+    description = Css(".repository-meta-content",
+                      cleanup=lambda desc: desc.strip())
     contents = CssMulti('.js-directory-link')
     table_contents = CssMulti(
         'tr.js-navigation-item',
