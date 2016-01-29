@@ -1,12 +1,12 @@
 language: python
 python:
-  - "2.6"
+#  - "2.6"      Incomplete unittest module
   - "2.7"
   - "3.2"
   - "3.3"
   - "3.4"
-  - "pypy"
-  - "pypy3"
+#  - "pypy"     Can't install lxml
+#  - "pypy3"    Can't install lxml
 install:
   - pip install .
   - pip install -r requirements.txt
