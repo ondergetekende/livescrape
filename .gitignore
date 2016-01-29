@@ -4,3 +4,5 @@ dist
 *.py[cod]
 *.egg-info
 .tox/
+.coverage
+htmlcov
