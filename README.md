@@ -22,6 +22,9 @@ Let's start by defining github's repository page
     page = GithubProjectpage()
     print(page.description)
     # will output the description
+    print(page._dict)
+    # will output {"description": "<whatever the description is>"}
+    
 
 That's nice and all, but we don't just want to address the project page for the cpython mirror, but just any project page. We can do this by adding string formatting parameters to `scrape_url`.
 
@@ -54,7 +57,7 @@ You can avoid using keyword arguments by defining `scrape_args` like this:
 Cleaning up the data
 ====================
 
-Now when you run the previous example, you may notice that the description is padded with a lot of whitespace. We really don't want that, so we can add a `cleanup` function. The signature is `cleanup(text_content, element)`. In this example I'll use a lambda.
+Now when you run the previous example, you may notice that the description is padded with a lot of whitespace. We really don't want that, so we can pass in a cleanup function with the `cleanup=` keyword argument. Its signature is `cleanup(extracted_data)`. In this example I'll use a lambda.
 
     from livescrape import ScrapedPage, Css
     
@@ -63,13 +66,40 @@ Now when you run the previous example, you may notice that the description is pa
         scrape_args = ("username", "projectname")
     
         description = Css(".repository-meta-content", 
-                          cleanup=lambda value, element: value.strip())
+                          cleanup=lambda value: value.strip())
     
     page = GithubProjectpage("python", "cpython")
     print(page.description)
     # will output the description
 
-Often, you'll need to do something more complicated, like further parsing a string. A lambda would be too cramped fo that. In that case, it may be useful to declare the cleanup function using the decorator syntax:
+By default, data is extracted by taking the text contents of the element. Sometimes, however, the data you need is in an attribute. In that case, you can provide the `attribute=` keyword argument: 
+
+    from livescrape import ScrapedPage, Css
+    
+    class GithubProjectpage(ScrapedPage):
+        scrape_url = "https://github.com/%(username)s/%(projectname)s/"
+        scrape_args = ("username", "projectname")
+    
+        git_repo = @Css("input.input-monospace", attribute="value")
+    
+    page = GithubProjectpage("python", "cpython")
+    print(page.description)
+
+If the data you're after is even more complicated (e.g. a combination of elements), you may want to perform the extraction yourself, by providing an extractor function with the `extract=` argument. Its signature is `extract(element)`. The extracted data will be passed into the cleanup chain unmodified, which means you're not limited to strings.
+
+    from livescrape import ScrapedPage, Css
+    
+    class GithubProjectpage(ScrapedPage):
+        scrape_url = "https://github.com/%(username)s/%(projectname)s/"
+        scrape_args = ("username", "projectname")
+    
+        git_repo = @Css("input.input-monospace",
+                        extract=lambda elem: {"repo": elem.get("value")})
+    
+    page = GithubProjectpage("python", "cpython")
+    print(page.description)
+
+While lambda's are nice for simple conversions, sometimes you'll need to do something more complicated. A lambda would be too cramped fo that. In that case, it may be useful to declare the cleanup function using the decorator syntax. The signature of the decorated function is `attributename(extracted_data, element)`.
 
     from livescrape import ScrapedPage, Css
     
@@ -86,7 +116,6 @@ Often, you'll need to do something more complicated, like further parsing a stri
     # will output the description
 
 For some common datatypes, there are special `Css` selectors: `CssInt`, `CssFloat`, `CssDate` , `CssRaw` (for raw html) and `CssBoolean` (testing whether some selector is present).
-
 
 List data
 =========
@@ -138,9 +167,18 @@ Websites typically have links, which you'll want to follow. The `CssLink` select
 
 You could now type `GithubOverview("python").repos[0].description` to retrieve the description of the first repository on the overview page.
 
-Custom HTTP
-===========
+Other attributes
+================
+
+In the first example we showcased the `_dict` property, which returns all of the defined scrape properties in dictionary form.
+
+There is also a list of scrapable attributes in the `scrape_keys` list.
 
 In many cases, you'll want to customize your HTTP access, for example to add caching, throttling or authentication. To do that, override the `scrape_fetch(url)` method, and add your logic there. You'll need to return a string with the raw HTML.
 
+Sometimes, your document isn't actually HTML, it may have been encoded in some form. In that case, you can override the `scrape_create_document(raw_html)`.
 
+Forward compatibility
+=====================
+
+This project uses [semantic versioning](http://semver.org/). Names starting with `scrape_`  and underscore (`_`) are considered special. You should not define attribibutes by those names.

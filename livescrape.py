@@ -17,20 +17,27 @@ class ScrapedAttribute(object):
     When used in a ScrapedPage, it will be converted into an attribute.
     """
 
-    _cleanup = None
-    _cleanup_method = None
+    def __init__(self, extract=None, cleanup=None, attribute=None,
+                 multiple=False):
+        if extract and attribute:
+            raise ValueError("extract and attribute are mututally exclusive")
 
-    def __init__(self, cleanup=None, attribute=None, multiple=False):
         self._cleanup = cleanup
+        self._extract = extract
         self.attribute = attribute
         self.multiple = multiple
+
+        # Placeholder for cleanup method when using the decorator syntax
+        self._cleanup_method = None
 
     @abstractmethod
     def get(self, doc, scraped_page):
         raise NotImplementedError()
 
     def extract(self, element, scraped_page):
-        if self.attribute is None:
+        if self._extract:
+            value = self._extract(element)
+        elif self.attribute is None:
             value = element.text_content()
         else:
             value = element.get(self.attribute)
@@ -41,7 +48,7 @@ class ScrapedAttribute(object):
 
     def perform_cleanups(self, value, element, scraped_page=None):
         if self._cleanup:
-            value = self._cleanup(value, element)
+            value = self._cleanup(value)
 
         if self._cleanup_method:
             value = self._cleanup_method(scraped_page, value, element)
@@ -64,8 +71,8 @@ class _ScrapedMeta(type):
     Converts any ScrapedAttribute attributes to usable properties.
     """
     def __new__(cls, name, bases, namespace):
+        keys = []
         for key, value in namespace.items():
-
             if isinstance(value, ScrapedAttribute):
                 def mk_attribute(selector):
                     def method(scraped):
@@ -73,8 +80,10 @@ class _ScrapedMeta(type):
                     return property(method)
 
                 namespace[key] = mk_attribute(value)
+                keys.append(key)
 
         result = super(_ScrapedMeta, cls).__new__(cls, name, bases, namespace)
+        result.scrape_keys = keys
         _SCRAPER_CLASSES[name] = result
         return result
 
@@ -92,7 +101,7 @@ class ScrapedPage(object):
             assert not pargs and not kwargs, \
                 "scraped_url is mutually exclusive with other arguments"
             self.scrape_url = scrape_url
-            self.scrape_args = {}
+            arguments = dict(self.scrape_arg_defaults)
 
         else:
             # We can't scrape if we don't actually have a url configured
@@ -110,12 +119,19 @@ class ScrapedPage(object):
     def scrape_fetch(self, url):
         return requests.get(url).text
 
+    def scrape_create_document(self, page):
+        return lxml.html.fromstring(page)
+
     def _get_value(self, property_scraper):
         if self._scrape_doc is None:
             page = self.scrape_fetch(self.scrape_url)
-            self._scrape_doc = lxml.html.fromstring(page)
+            self._scrape_doc = self.scrape_create_document(page)
 
         return property_scraper.get(self._scrape_doc, scraped_page=self)
+
+    @property
+    def _dict(self):
+        return dict((key, getattr(self, key)) for key in self.scrape_keys)
 
     def __repr__(self):
         return "%s(scrape_url=%r)" % (type(self).__name__, self.scrape_url)
