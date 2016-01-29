@@ -1,0 +1,8 @@
+site_name: Livescrape documentation
+repo_url: https://github.com/ondergetekende/livesscrape
+pages:
+    - 'Introduction': 'index.md'
+    - 'Tutorial': 'tutorial.md'
+    - 'API documentation': 'api.md'
+
+
