@@ -5,6 +5,8 @@ python:
   - "3.2"
   - "3.3"
   - "3.4"
+  - "3.5"
+  - "nightly"
 #  - "pypy"     Can't install lxml
 #  - "pypy3"    Can't install lxml
 install:

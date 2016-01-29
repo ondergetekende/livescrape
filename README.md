@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/ondergetekende/livesscrape.png?branch=master)](https://travis-ci.org/ondergetekende/livesscrape)
+[![PyPI version](https://badge.fury.io/py/livescrape.svg)](https://pypi.python.org/pypi/livescrape)
+[![Documentation](https://img.shields.io/badge/docs-unknown%20version-yellow.svg?style=flat](https://livesscrape.readthedocs.org/en/latest/)
 
 Introduction
 ============
