@@ -14,13 +14,16 @@ Example
 
 For more complete example, I recommend you check out the [Tutorial](docs/tutorial.md), but here's a quick primer using github.
 
-    class GithubProjectpage(ScrapedPage):
+ 
+    from livescrape import ScrapedPage, Css
+    
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
         description = Css(".repository-meta-content",
                           cleanup=lambda desc: desc.strip())
-        contents = CssMulti('.js-directory-link')
+        contents = CssLink('.js-directory-link')
         table_contents = CssMulti(
             'tr.js-navigation-item',
             name=Css("td.content a"),

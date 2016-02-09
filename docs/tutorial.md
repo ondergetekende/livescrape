@@ -7,12 +7,12 @@ Let's start by defining github's repository page
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/python/cpython/"
     
         description = Css(".repository-meta-content")
     
-    page = GithubProjectpage()
+    page = GithubProjectPage()
     print(page.description)
     # will output the description
     print(page._dict)
@@ -23,12 +23,12 @@ That's nice and all, but we don't just want to address the project page for the 
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
     
         description = Css(".repository-meta-content")
     
-    page = GithubProjectpage(username="python", projectname="cpython")
+    page = GithubProjectPage(username="python", projectname="cpython")
     print(page.description)
     # will output the description
 
@@ -36,13 +36,13 @@ You can avoid using keyword arguments by defining `scrape_args` like this:
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
         description = Css(".repository-meta-content")
     
-    page = GithubProjectpage("python", "cpython")
+    page = GithubProjectPage("python", "cpython")
     print(page.description)
     # will output the description
 
@@ -54,14 +54,14 @@ Now when you run the previous example, you may notice that the description is pa
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
         description = Css(".repository-meta-content", 
                           cleanup=lambda value: value.strip())
     
-    page = GithubProjectpage("python", "cpython")
+    page = GithubProjectPage("python", "cpython")
     print(page.description)
     # will output the description
 
@@ -69,34 +69,34 @@ By default, data is extracted by taking the text contents of the element. Someti
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
-        git_repo = @Css("input.input-monospace", attribute="value")
+        git_repo = Css("input.input-monospace", attribute="value")
     
-    page = GithubProjectpage("python", "cpython")
+    page = GithubProjectPage("python", "cpython")
     print(page.description)
 
 If the data you're after is even more complicated (e.g. a combination of elements), you may want to perform the extraction yourself, by providing an extractor function with the `extract=` argument. Its signature is `extract(element)`. The extracted data will be passed into the cleanup chain unmodified, which means you're not limited to strings.
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
         git_repo = @Css("input.input-monospace",
                         extract=lambda elem: {"repo": elem.get("value")})
     
-    page = GithubProjectpage("python", "cpython")
+    page = GithubProjectPage("python", "cpython")
     print(page.description)
 
 While lambda's are nice for simple conversions, sometimes you'll need to do something more complicated. A lambda would be too cramped fo that. In that case, it may be useful to declare the cleanup function using the decorator syntax. The signature of the decorated function is `attributename(extracted_data, element)`.
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
@@ -104,7 +104,7 @@ While lambda's are nice for simple conversions, sometimes you'll need to do some
         def description(self, value, element):
             return value.strip()
     
-    page = GithubProjectpage("python", "cpython")
+    page = GithubProjectPage("python", "cpython")
     print(page.description)
     # will output the description
 
@@ -117,7 +117,7 @@ Normaly when scraping, only the first matching element is used, but sometimes yo
 
     from livescrape import ScrapedPage, Css
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
         
@@ -132,7 +132,7 @@ If you need more than one datum per list item, you will need to use `CSSMulti`. 
 
     from livescrape import ScrapedPage, Css, CssMulti
     
-    class GithubProjectpage(ScrapedPage):
+    class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
@@ -148,7 +148,7 @@ Note that cleanup code runs per list item, not on the list as a whole.
 Links
 =====
 
-Websites typically have links, which you'll want to follow. The `CssLink` selector helps you by allowing you to specify what `ScrapedPage` should handle the target of that link. In the following example, we're reusing one of the `GithubProjectpage` definitions above.
+Websites typically have links, which you'll want to follow. The `CssLink` selector helps you by allowing you to specify what `ScrapedPage` should handle the target of that link. In the following example, we're reusing one of the `GithubProjectPage` definitions above.
 
     from scrape import ScrapedPage, CssLink
     
@@ -156,6 +156,6 @@ Websites typically have links, which you'll want to follow. The `CssLink` select
         scrape_url = "https://github.com/%(username)s"
         scrape_args = ("username")
         
-        repos = CssLink(".repo-list-name a", GithubProjectpage, multiple=True)
+        repos = CssLink(".repo-list-name a", GithubProjectPage, multiple=True)
 
 You could now type `GithubOverview("python").repos[0].description` to retrieve the description of the first repository on the overview page.

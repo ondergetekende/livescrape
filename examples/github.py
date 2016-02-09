@@ -7,7 +7,7 @@ class GithubProjectpage(ScrapedPage):
 
     description = Css(".repository-meta-content",
                       cleanup=lambda desc: desc.strip())
-    contents = CssMulti('.js-directory-link')
+    contents = CssLink('.js-directory-link', multiple=True)
     table_contents = CssMulti(
         'tr.js-navigation-item',
         name=Css("td.content a"),
