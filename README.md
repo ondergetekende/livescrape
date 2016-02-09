@@ -13,9 +13,8 @@ Example
 =======
 
 For more complete example, I recommend you check out the [Tutorial](docs/tutorial.md), but here's a quick primer using github.
-
  
-    from livescrape import ScrapedPage, Css
+    from livescrape import ScrapedPage, Css, CssMulti
     
     class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
@@ -23,7 +22,7 @@ For more complete example, I recommend you check out the [Tutorial](docs/tutoria
     
         description = Css(".repository-meta-content",
                           cleanup=lambda desc: desc.strip())
-        contents = CssLink('.js-directory-link')
+        contents = Css('.js-directory-link', multiple=True)
         table_contents = CssMulti(
             'tr.js-navigation-item',
             name=Css("td.content a"),
@@ -34,5 +33,9 @@ For more complete example, I recommend you check out the [Tutorial](docs/tutoria
     project_page = GithubProjectPage("ondergetekende", "livescrape")
     print(project_page.description)
     # Prints out the description for this project
-    print(projects.contents)
+    
+    print(project_page.contents)
     # Prints the filenames in the root of the repository
+    
+    print(project_page.table_contents)
+    # Prints information for all files in the root of the repository
