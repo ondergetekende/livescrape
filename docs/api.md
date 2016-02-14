@@ -10,11 +10,15 @@ The url for the scraped page. Can contain named percent-style formatting placeho
 
 ### scrape_args
 
-Names of the positional arguments
+Names of the positional arguments. After construction, this is replaced by a dictionary with all of the provided values.
 
 ### scrape_arg_defaults
 
 Default values for any arguments provided.
+
+### scrape_headers
+
+Defines additional headers to be sent. You may, for example, want to modify the user agent by adding `scrape_headers = {'User-Agent': 'My fake browser'}` to your `ScrapedPage` definition.
 
 ### scrape_fetch(self, url)
 
@@ -31,6 +35,10 @@ A property which returns all of the defined scrape properties in dictionary form
 ### scrape_keys
 
 A list of all the scrapable attributes. Automatically generated.
+
+### scrape_session
+
+By default this property returns the session shared by all the `ScrapedPage` classes, but individual classes can override according to their needs. The original shared session can be found in `livescrape.SHARED_SESSION`.
 
 ## ScrapedAttribute(extract=None, cleanup=None, attribute=None, multiple=False)
 
@@ -89,6 +97,9 @@ Finds a list of elements in the document, and for each element, applies addition
 
 Finds links in the document using `selector`, and returns a new `ScrapedPage` for the link target. `page_type` is the type of `ScrapedPage` to be instantiated. You may pass the target type by name, to break circular dependencies. Supports all additional constructor arguments defined by `ScrapedAttribute`, although by default, it defines `attribute='href'` for obvious reasons.
 
+# SHARED_SESSION
+
+All of the `ScapedPage` descendents share a [requests](http://docs.python-requests.org/) session. In the classes this is exposed in an overridable `scrape_session` property. It may be tempting to change things in the shared session, such as user agent, however, as with any global variable, this is a bad idea. Libraries using livescrape may depend on the default values, and may break when you change them. If you need a custom session, it is best to override the `scrape_session` property to provide your own one.
 
 Forward compatibility
 =====================

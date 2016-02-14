@@ -2,13 +2,17 @@ from abc import abstractmethod
 import datetime
 try:
     import urlparse  # python2
-except ImportError:
+except ImportError:  # pragma: no cover
     import urllib.parse as urlparse
 
 import lxml.etree
 import lxml.html
 import requests
 import six
+
+
+SHARED_SESSION = requests.Session()
+SHARED_SESSION.headers['User-Agent'] = "Mozilla/5.0 (Livescrape)"
 
 
 class ScrapedAttribute(object):
@@ -31,7 +35,7 @@ class ScrapedAttribute(object):
         self._cleanup_method = None
 
     @abstractmethod
-    def get(self, doc, scraped_page):
+    def get(self, doc, scraped_page):  # pragma: no cover
         raise NotImplementedError()
 
     def extract(self, element, scraped_page):
@@ -94,6 +98,7 @@ class ScrapedPage(object):
     scrape_url = None
     scrape_args = []
     scrape_arg_defaults = {}
+    scrape_headers = {}
 
     def __init__(self, *pargs, **kwargs):
         scrape_url = kwargs.pop("scrape_url", None)
@@ -116,8 +121,12 @@ class ScrapedPage(object):
 
             self.scrape_url = self.scrape_url % arguments
 
+    @property
+    def scrape_session(self):
+        return SHARED_SESSION
+
     def scrape_fetch(self, url):
-        return requests.get(url).text
+        return self.scrape_session.get(url).text
 
     def scrape_create_document(self, page):
         return lxml.html.fromstring(page)
@@ -156,12 +165,18 @@ class Css(ScrapedAttribute):
 
 class CssFloat(Css):
     def cleanup(self, value, elements, scraped_page=None):
-        return float(value)
+        try:
+            return float(value)
+        except ValueError:
+            return None
 
 
 class CssInt(Css):
     def cleanup(self, value, elements, scraped_page=None):
-        return int(value)
+        try:
+            return int(value)
+        except ValueError:
+            return None
 
 
 class CssDate(Css):
@@ -170,7 +185,10 @@ class CssDate(Css):
         super(CssDate, self).__init__(selector, **kwargs)
 
     def cleanup(self, value, elements, scraped_page=None):
-        return datetime.datetime.strptime(value, self.date_format)
+        try:
+            return datetime.datetime.strptime(value, self.date_format)
+        except ValueError:
+            return None
 
 
 class CssBoolean(Css):
