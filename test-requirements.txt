@@ -1,5 +1,6 @@
 pep8
 flake8
 hacking
-tox
 coverage
+unittest2
+responses

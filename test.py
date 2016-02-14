@@ -1,13 +1,18 @@
-import unittest
+import responses
+import unittest2 as unittest
 
 import livescrape
 
 
 class BasePage(livescrape.ScrapedPage):
-    scrape_url = "http://localhost/fake"
+    scrape_url = "http://fake-host/test.html"
 
-    def scrape_fetch(self, url):
-        return """<html><body>
+
+class Test(unittest.TestCase):
+    def setUp(self):
+        responses.add(
+            responses.GET, BasePage.scrape_url,
+            """<html><body>
             <h1 class="foo" data-foo=1>Heading</h1>
             <h1 id="the-id">15</h1>
             <span class=float>3.14</span>
@@ -19,10 +24,9 @@ class BasePage(livescrape.ScrapedPage):
               <tr><th>key<td>value</tr>
               <tr><th>key2<td>value2</tr>
             </table
-            """
-
-
-class Test(unittest.TestCase):
+            """)
+        responses.start()
+        self.addCleanup(responses.stop)
 
     def test_simplecss(self):
         class Page(BasePage):
@@ -74,31 +78,37 @@ class Test(unittest.TestCase):
 
         self.assertIsInstance(x.foo, Page)
         self.assertEqual(x.foo.scrape_url,
-                         "http://localhost/very-fake")
+                         "http://fake-host/very-fake")
 
     def test_float(self):
         class Page(BasePage):
             foo = livescrape.CssFloat(".float")
+            foo_fail = livescrape.CssFloat(".date")
 
         x = Page()
 
         self.assertAlmostEqual(x.foo, 3.14)
+        self.assertIsNone(x.foo_fail)
 
     def test_int(self):
         class Page(BasePage):
             foo = livescrape.CssInt(".int")
+            foo_fail = livescrape.CssInt(".date")
 
         x = Page()
 
         self.assertEqual(x.foo, 42)
+        self.assertIsNone(x.foo_fail)
 
     def test_date(self):
         class Page(BasePage):
             foo = livescrape.CssDate(".date", '%Y-%m-%d')
+            foo_fail = livescrape.CssDate(".float", '%Y-%m-%d')
 
         x = Page()
 
         self.assertEqual(x.foo.year, 2016)
+        self.assertIsNone(x.foo_fail)
 
     def test_bool(self):
         class Page(BasePage):
@@ -174,7 +184,6 @@ class Test(unittest.TestCase):
             return "TESTed"
 
         def extract(x):
-            print("XXX", repr(x))
             self.assertIsNone(extract_args[0])
             extract_args[0] = x
             return "Xtracted"
@@ -202,7 +211,6 @@ class Test(unittest.TestCase):
             return "TESTed"
 
         def extract(x):
-            print("XXX", repr(x))
             self.assertIsNone(extract_args[0])
             extract_args[0] = x
             return "Xtracted"
@@ -223,6 +231,7 @@ class Test(unittest.TestCase):
         self.assertEqual(method_args[0][0], "TESTed")
         self.assertEqual(method_args[0][1].text, "Heading")
         self.assertEqual(value, "METhod")
+
 
 if __name__ == '__main__':
     unittest.main()
