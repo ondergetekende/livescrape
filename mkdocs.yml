@@ -4,5 +4,6 @@ pages:
     - 'Introduction': 'index.md'
     - 'Tutorial': 'tutorial.md'
     - 'API documentation': 'api.md'
+    - 'Advanced document retrieval': 'advanced.md'
 
 

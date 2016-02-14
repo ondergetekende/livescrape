@@ -3,7 +3,7 @@ Defining a scraper
 
 Defining a scraper is similar to defining a model in django. In my example I'll use github. Github has an API which would be far more suitable for any use, but it's a well-known site, which helps understanding the examples.
 
-Let's start by defining github's repository page
+Let's start by defining GitHub's repository page
 
     from livescrape import ScrapedPage, Css
     
