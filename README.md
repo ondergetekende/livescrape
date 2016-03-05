@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ondergetekende/livesscrape.png?branch=master)](https://travis-ci.org/ondergetekende/livesscrape)
+[![Build Status](https://travis-ci.org/ondergetekende/livescrape.png?branch=master)](https://travis-ci.org/ondergetekende/livescrape)
 [![PyPI version](https://badge.fury.io/py/livescrape.svg)](https://pypi.python.org/pypi/livescrape)
 [![Documentation](https://readthedocs.org/projects/readthedocs/badge/?version=latest)](https://livesscrape.readthedocs.org/en/latest/)
 
