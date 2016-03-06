@@ -126,7 +126,8 @@ class ScrapedPage(object):
         return SHARED_SESSION
 
     def scrape_fetch(self, url):
-        return self.scrape_session.get(url).text
+        return self.scrape_session.get(url,
+                                       headers=self.scrape_headers).text
 
     def scrape_create_document(self, page):
         return lxml.html.fromstring(page)

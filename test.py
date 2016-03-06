@@ -10,6 +10,7 @@ class BasePage(livescrape.ScrapedPage):
 
 class Test(unittest.TestCase):
     def setUp(self):
+        responses.reset()
         responses.add(
             responses.GET, BasePage.scrape_url,
             """<html><body>
@@ -232,6 +233,14 @@ class Test(unittest.TestCase):
         self.assertEqual(method_args[0][1].text, "Heading")
         self.assertEqual(value, "METhod")
 
+    def test_headers(self):
+        class Page(BasePage):
+            scrape_headers = {"foo": "bar"}
+
+        Page().scrape_fetch(BasePage.scrape_url)
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(responses.calls[0].request.headers['Foo'],
+                         'bar')
 
 if __name__ == '__main__':
     unittest.main()
