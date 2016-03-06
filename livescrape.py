@@ -102,24 +102,25 @@ class ScrapedPage(object):
 
     def __init__(self, *pargs, **kwargs):
         scrape_url = kwargs.pop("scrape_url", None)
+        scrape_referer = kwargs.pop("scrape_referer", None)
+
+        arguments = dict(self.scrape_arg_defaults)
+        arguments.update(kwargs)
+        arguments.update(zip(self.scrape_args, pargs))
+        self.scrape_args = arguments
+
         if scrape_url:
-            assert not pargs and not kwargs, \
-                "scraped_url is mutually exclusive with other arguments"
             self.scrape_url = scrape_url
-            arguments = dict(self.scrape_arg_defaults)
-
-        else:
+        elif not self.scrape_url:
             # We can't scrape if we don't actually have a url configured
-            if not self.scrape_url:
-                raise ValueError("%s.scrape_url needs to be defined" %
-                                 type(self).__name__)
-
-            arguments = dict(self.scrape_arg_defaults)
-            arguments.update(kwargs)
-            arguments.update(zip(self.scrape_args, pargs))
-            self.scrape_args = arguments
-
+            raise ValueError("%s.scrape_url needs to be defined" %
+                             type(self).__name__)
+        else:
             self.scrape_url = self.scrape_url % arguments
+
+        self.scrape_headers = dict(self.scrape_headers)
+        if scrape_referer:
+            self.scrape_headers['Referer'] = scrape_referer
 
     @property
     def scrape_session(self):
@@ -222,13 +223,22 @@ class CssMulti(Css):
 
 
 class CssLink(Css):
-    def __init__(self, selector, page_factory, **kwargs):
+    def __init__(self, selector, page_factory, referer=True, **kwargs):
         super(CssLink, self).__init__(selector, attribute="href", **kwargs)
         self.page_factory = page_factory
+        self.referer = referer
 
     def cleanup(self, value, elements, scraped_page=None):
         url = urlparse.urljoin(scraped_page.scrape_url, value)
         factory = (_SCRAPER_CLASSES[self.page_factory]
                    if isinstance(self.page_factory, six.string_types)
                    else self.page_factory)
-        return factory(scrape_url=url)
+
+        if self.referer is True:  # automatic referer
+            referer = scraped_page.scrape_url
+        elif not self.referer:
+            referer = None
+        else:
+            referer = self.referer
+
+        return factory(scrape_url=url, scrape_referer=referer)

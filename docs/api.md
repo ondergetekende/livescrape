@@ -93,9 +93,11 @@ Pulls data from the document using a css selector, and returns the content's raw
 
 Finds a list of elements in the document, and for each element, applies additional `ScrapedAttribute`s to build a dictionary. The additional attributes are provided as keyword arguments to the constructor. Supports none of the additional constructor arguments defined by `ScrapedAttribute`.
 
-## CssLink(selector, page_type, ...)
+## CssLink(selector, page_type, referer=True, ...)
 
 Finds links in the document using `selector`, and returns a new `ScrapedPage` for the link target. `page_type` is the type of `ScrapedPage` to be instantiated. You may pass the target type by name, to break circular dependencies. Supports all additional constructor arguments defined by `ScrapedAttribute`, although by default, it defines `attribute='href'` for obvious reasons.
+
+If `referer` is True, the Referer header is set up automatically. You can also set it to a custom url, or to False (for no referer header).
 
 # SHARED_SESSION
 

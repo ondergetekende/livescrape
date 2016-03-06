@@ -242,5 +242,58 @@ class Test(unittest.TestCase):
         self.assertEqual(responses.calls[0].request.headers['Foo'],
                          'bar')
 
+    def test_referer(self):
+        class Page(BasePage):
+            foo = livescrape.CssLink("a", "Page")
+
+        x = Page()
+
+        self.assertIsInstance(x.foo, Page)
+
+        responses.add(
+            responses.GET, x.foo.scrape_url,
+            "<html>")
+
+        self.assertIsNone(x.foo.foo)
+
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[1].request.headers['Referer'],
+                         'http://fake-host/test.html')
+
+    def test_custom_referer(self):
+        class Page(BasePage):
+            foo = livescrape.CssLink("a", "Page", referer="http://no")
+
+        x = Page()
+
+        self.assertIsInstance(x.foo, Page)
+
+        responses.add(
+            responses.GET, x.foo.scrape_url,
+            "<html>")
+
+        self.assertIsNone(x.foo.foo)
+
+        self.assertEqual(len(responses.calls), 2)
+        self.assertEqual(responses.calls[1].request.headers['Referer'],
+                         'http://no')
+
+    def test_no_referer(self):
+        class Page(BasePage):
+            foo = livescrape.CssLink("a", "Page", referer=False)
+
+        x = Page()
+
+        self.assertIsInstance(x.foo, Page)
+
+        responses.add(
+            responses.GET, x.foo.scrape_url,
+            "<html>")
+
+        self.assertIsNone(x.foo.foo)
+
+        self.assertEqual(len(responses.calls), 2)
+        self.assertNotIn("Referer", responses.calls[1].request.headers)
+
 if __name__ == '__main__':
     unittest.main()
