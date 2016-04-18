@@ -1,4 +1,4 @@
-from livescrape import ScrapedPage, Css, CssMulti, CssLink
+from livescrape import ScrapedPage, Css, CssGroup, CssLink
 
 
 class GithubProjectpage(ScrapedPage):
@@ -7,13 +7,11 @@ class GithubProjectpage(ScrapedPage):
 
     description = Css(".repository-meta-content",
                       cleanup=lambda desc: desc.strip())
-    contents = CssLink('.js-directory-link', multiple=True)
-    table_contents = CssMulti(
-        'tr.js-navigation-item',
-        name=Css("td.content a"),
-        message=Css("td.message a"),
-        age=Css("td.age time", attribute="datetime"),
-    )
+    contents = CssLink('.js-directory-link', "GithubOveriew", multiple=True)
+    table_contents = CssGroup('tr.js-navigation-item', multiple=True)
+    table_contents.name = Css("td.content a")
+    table_contents.message = Css("td.message a")
+    table_contents.age = Css("td.age time", attribute="datetime")
 
 
 class GithubOveriew(ScrapedPage):
@@ -25,4 +23,5 @@ class GithubOveriew(ScrapedPage):
 
 if __name__ == '__main__':
     cpython = GithubOveriew(username="python")
+    print(cpython.repos[0].description)
     print(cpython.repos[0].description)

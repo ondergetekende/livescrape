@@ -128,20 +128,19 @@ Note that cleanup code runs per list item, not on the list as a whole.
 Tabular data
 ============
 
-If you need more than one datum per list item, you will need to use `CSSMulti`. You can provide the additional selectors as keyword arguments. It will produce a dict with values for each of the table contents.
+If you need more than one datum per list item, you will need to use `CSSGroup`. You can provide the additional selectors by assigning them to attributes of the group. It will produce an object for each of the table contents.
 
-    from livescrape import ScrapedPage, Css, CssMulti
+    from livescrape import ScrapedPage, Css, CssGroup
     
     class GithubProjectPage(ScrapedPage):
         scrape_url = "https://github.com/%(username)s/%(projectname)s/"
         scrape_args = ("username", "projectname")
     
-        table_contents = CssMulti(
-            'tr.js-navigation-item',
-            name=Css("td.content a"),
-            message=Css("td.message a"),
-            age=Css("td.age time", attribute="datetime"),
-            )
+        table_contents = CssGroup('tr.js-navigation-item', multiple=True)
+    
+        table_contents.name = Css("td.content a")
+        table_contents.message = Css("td.message a")
+        table_contents.age = Css("td.age time", attribute="datetime")
 
 Note that cleanup code runs per list item, not on the list as a whole.
 

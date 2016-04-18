@@ -66,10 +66,13 @@ class Test(unittest.TestCase):
         class Page(BasePage):
             foo = livescrape.Css("h1.foo",
                                  attribute="data-foo")
+            not_there = livescrape.Css("h1.foo",
+                                       attribute="not-there")
 
         x = Page()
 
         self.assertEqual(x.foo, '1')
+        self.assertIsNone(x.not_there)
 
     def test_link(self):
         class Page(BasePage):
@@ -140,6 +143,34 @@ class Test(unittest.TestCase):
 
         self.assertEqual(x.foo, [{"key": "key", "value": "value"},
                                  {"key": "key2", "value": "value2"}])
+
+    def test_group(self):
+        class Page(BasePage):
+            foo = livescrape.CssGroup("table tr", multiple=True)
+            foo.key = livescrape.Css("th")
+            foo.value = livescrape.Css("td")
+
+        x = Page()
+
+        self.assertEqual(x.foo[0]["key"], "key")
+        self.assertEqual(x.foo[0]["value"], "value")
+        self.assertEqual(x.foo[1]["key"], "key2")
+        self.assertEqual(x.foo[1]["value"], "value2")
+
+        self.assertEqual(x.foo[0].key, "key")
+        self.assertEqual(x.foo[0].value, "value")
+        self.assertEqual(x.foo[1].key, "key2")
+        self.assertEqual(x.foo[1].value, "value2")
+        self.assertEqual(x.foo[0]._dict(),
+                         {"key": "key", "value": "value"})
+
+        # List members, but filter private ones
+        self.assertEqual([x for x in dir(x.foo[1])
+                          if x[0] != "_"],
+                         ["key", "value"])
+
+        with self.assertRaises(AttributeError):
+            x.foo[0].nonexistent
 
     def test_cleanup(self):
         cleanup_args = [None]

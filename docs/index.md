@@ -16,16 +16,14 @@ For more complete example, I recommend you check out the [Tutorial](tutorial.md)
     
         description = Css(".repository-meta-content",
                           cleanup=lambda desc: desc.strip())
-        contents = CssMulti('.js-directory-link')
-        table_contents = CssMulti(
-            'tr.js-navigation-item',
-            name=Css("td.content a"),
-            message=Css("td.message a"),
-            age=Css("td.age time", attribute="datetime"),
-        )
+        contents = Css('.js-directory-link', multiple=True)
+        table_contents = CssGroup('tr.js-navigation-item')
+        table_contents.name = Css("td.content a")
+        table_contents.message = Css("td.message a")
+        table_contents.age = Css("td.age time", attribute="datetime"),
     
     project_page = GithubProjectPage("ondergetekende", "livescrape")
-    print(project_page.description)
-    # Prints out the description for this project
-    print(projects.contents)
-    # Prints the filenames in the root of the repository
+    
+    print(project_page.description) # Prints the description for this project
+        
+    print(projects.contents)  # Prints the filenames in the repository root

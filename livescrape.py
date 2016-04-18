@@ -4,6 +4,7 @@ try:
     import urlparse  # python2
 except ImportError:  # pragma: no cover
     import urllib.parse as urlparse
+import warnings
 
 import lxml.etree
 import lxml.html
@@ -211,6 +212,9 @@ class CssMulti(Css):
         super(CssMulti, self).__init__(selector, cleanup=cleanup,
                                        multiple=True)
         self.subselectors = subselectors
+        warnings.warn(
+            "The 'CssMulti' class was deprecated in favor of CssGroup",
+            DeprecationWarning)
 
     def extract(self, element, scraped_page=None):
         value = {}
@@ -220,6 +224,52 @@ class CssMulti(Css):
                                       scraped_page=scraped_page)
 
         return self.perform_cleanups(value, element, scraped_page)
+
+
+class CssGroup(Css):
+    class _CompoundAttribute(object):
+        def __init__(self, parent, element, scraped_page):
+            self._subselectors = parent._subselectors
+            self._element = element
+            self._scaped_page = scraped_page
+
+        def __getattr__(self, attribute):
+            try:
+                selector = self._subselectors[attribute]
+            except KeyError:
+                return getattr(super(CssGroup._CompoundAttribute, self),
+                               attribute)
+
+            return selector.get(self._element, self._scaped_page)
+
+        def __getitem__(self, attribute):
+            # May raise keyerror, which is suitable for __getitem__
+            selector = self._subselectors[attribute]
+            return selector.get(self._element, self._scaped_page)
+
+        def __dir__(self):
+            attrs = dir(super(CssGroup._CompoundAttribute, self))
+            attrs += self._subselectors.keys()
+            return attrs
+
+        def _dict(self):
+            return dict(
+                (key, selector.get(self._element, self._scaped_page))
+                for (key, selector) in self._subselectors.items())
+
+    def __init__(self, *pargs, **kwargs):
+        super(CssGroup, self).__init__(*pargs, **kwargs)
+        self._subselectors = {}
+
+    def extract(self, element, scraped_page=None):
+        value = CssGroup._CompoundAttribute(self, element, scraped_page)
+        return self.perform_cleanups(value, element, scraped_page)
+
+    def __setattr__(self, key, value):
+        if isinstance(value, ScrapedAttribute):
+            self._subselectors[key] = value
+        else:
+            super(CssGroup, self).__setattr__(key, value)
 
 
 class CssLink(Css):

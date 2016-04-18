@@ -89,9 +89,24 @@ Pulls data from the document using a css selector, and returns true if it was fo
 
 Pulls data from the document using a css selector, and returns the content's raw html. Not that this HTML has been fixed up by lxml, and may differ from the html in the original document. Supports all additional constructor arguments defined by `ScrapedAttribute`, except `extract`.
 
+## CssGroup(selector)
+
+Groups together several attributes, which all operate on the same element. Especially useful when used with`multiple=True`. Adding an element is done by assigning an `ScrapedAttribute` to an attribute of CssGroup, like this:
+
+```python
+from livescrape import ScrapedPage, CssGroup, Css
+
+class SomePage(ScrapedPage):
+    user = CssGroup(".user")
+    user.name = Css("a.username")  # Effectively finds ".user a.username"
+    user.rank = Css("a.userrank")
+```
+
 ## CssMulti(selector, attr1=..., attr2=... )
 
 Finds a list of elements in the document, and for each element, applies additional `ScrapedAttribute`s to build a dictionary. The additional attributes are provided as keyword arguments to the constructor. Supports none of the additional constructor arguments defined by `ScrapedAttribute`.
+
+Deprecated in favor of `CssGroup`
 
 ## CssLink(selector, page_type, referer=True, ...)
 
