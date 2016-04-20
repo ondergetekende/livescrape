@@ -49,6 +49,12 @@ class ScrapedAttribute(object):
             if value is None:
                 return
 
+        # In python2, lxml returns str if only ascii characters are used.
+        # This leads to inconsistent return types, so in that case, we convert
+        # to unicode (which should be a semantic no-op)
+        if six.PY2 and isinstance(value, str):  # pragma: no cover
+            value = unicode(value)
+
         return self.perform_cleanups(value, element, scraped_page)
 
     def perform_cleanups(self, value, element, scraped_page=None):
