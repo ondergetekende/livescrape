@@ -165,8 +165,8 @@ class Test(unittest.TestCase):
                          {"key": "key", "value": "value"})
 
         # List members, but filter private ones
-        self.assertEqual([x for x in dir(x.foo[1])
-                          if x[0] != "_"],
+        self.assertEqual([att for att in dir(x.foo[1])
+                          if att[0] != "_"],
                          ["key", "value"])
 
         with self.assertRaises(AttributeError):
