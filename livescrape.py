@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import cgi
 import datetime
 try:
     import urlparse  # python2
@@ -53,7 +54,7 @@ class ScrapedAttribute(object):
         # This leads to inconsistent return types, so in that case, we convert
         # to unicode (which should be a semantic no-op)
         if six.PY2 and isinstance(value, str):  # pragma: no cover
-            value = unicode(value)
+            value = six.text_type(value)
 
         return self.perform_cleanups(value, element, scraped_page)
 
@@ -210,9 +211,19 @@ class CssBoolean(Css):
 
 
 class CssRaw(Css):
+    def __init__(self, selector, include_tag=False, **kwargs):
+        self.include_tag = include_tag
+        super(CssRaw, self).__init__(selector, **kwargs)
+
     def extract(self, element, scraped_page):
-        value = ''.join(lxml.html.tostring(child, encoding="unicode")
-                        for child in element)
+        if self.include_tag:
+            value = lxml.html.tostring(element, encoding="unicode")
+        else:
+            value = six.text_type("")
+            if element.text:
+                value = cgi.escape(element.text)
+            for child in element:
+                value += lxml.html.tostring(child, encoding="unicode")
 
         return self.perform_cleanups(value, element, scraped_page)
 

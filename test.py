@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import responses
 import unittest2 as unittest
@@ -24,7 +25,9 @@ class Test(unittest.TestCase):
             <span class=date>2016-04-23</span>
             <a href="/very-fake">link</a>
             <table>
-              <tr><th>key<td>value</tr>
+              <tr>test123
+                <th>key</th> testmore
+                <td>value</th></tr>
               <tr><th>key2<td>value2</tr>
             </table
             """)
@@ -145,10 +148,16 @@ class Test(unittest.TestCase):
     def test_raw(self):
         class Page(BasePage):
             foo = livescrape.CssRaw("table>tr")
+            foo_withtag = livescrape.CssRaw("table>tr", include_tag=True)
 
         x = Page()
+        html = re.sub(r'\s+', " ", x.foo).strip()
+        self.assertEqual(html, "test123 <th>key</th> testmore <td>value</td>")
 
-        self.assertEqual(x.foo, "<th>key</th><td>value</td>")
+        html = re.sub(r'\s+', " ", x.foo_withtag).strip()
+        self.assertEqual(
+            html,
+            "<tr>test123 <th>key</th> testmore <td>value</td></tr>")
 
     def test_complex(self):
         class Page(BasePage):
