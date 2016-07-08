@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='livescrape',
-    version='0.9.7',
+    version='0.9.8',
     url='https://github.com/ondergetekende/python-livescrape',
     description='A toolkit to build pythonic web scraper libraries',
     author='Koert van der Veer',
