@@ -1,3 +1,5 @@
+import datetime
+
 import responses
 import unittest2 as unittest
 
@@ -105,13 +107,29 @@ class Test(unittest.TestCase):
         self.assertIsNone(x.foo_fail)
 
     def test_date(self):
+        class UTC(datetime.tzinfo):
+            """UTC"""
+
+            def utcoffset(self, dt):
+                return datetime.timedelta(0)
+
+            def tzname(self, dt):
+                return "UTC"
+
+            def dst(self, dt):
+                return datetime.timedelta(0)
+
         class Page(BasePage):
             foo = livescrape.CssDate(".date", '%Y-%m-%d')
+            foo_tz = livescrape.CssDate(".date", '%Y-%m-%d', tzinfo=UTC())
             foo_fail = livescrape.CssDate(".float", '%Y-%m-%d')
 
         x = Page()
 
         self.assertEqual(x.foo.year, 2016)
+        self.assertEqual(x.foo.tzinfo, None)
+        self.assertEqual(x.foo_tz.year, 2016)
+        self.assertEqual(x.foo_tz.tzinfo.tzname(None), "UTC")
         self.assertIsNone(x.foo_fail)
 
     def test_bool(self):

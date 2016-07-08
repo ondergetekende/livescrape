@@ -189,13 +189,17 @@ class CssInt(Css):
 
 
 class CssDate(Css):
-    def __init__(self, selector, date_format, **kwargs):
+    def __init__(self, selector, date_format, tzinfo=None, **kwargs):
         self.date_format = date_format
+        self.tzinfo = tzinfo
         super(CssDate, self).__init__(selector, **kwargs)
 
     def cleanup(self, value, elements, scraped_page=None):
         try:
-            return datetime.datetime.strptime(value, self.date_format)
+            result = datetime.datetime.strptime(value, self.date_format)
+            if self.tzinfo:
+                result = result.replace(tzinfo=self.tzinfo)
+            return result
         except ValueError:
             return None
 
