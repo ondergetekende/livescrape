@@ -159,10 +159,16 @@ class ScrapedPage(object):
 class Css(ScrapedAttribute):
     def __init__(self, selector, **kwargs):
         self.selector = selector
+        assert selector or not self.multiple, "Empty selectors are only "\
+            "with singular matches"
+
         super(Css, self).__init__(**kwargs)
 
     def get(self, doc, scraped_page):
         assert doc is not None
+        if not self.selector:
+            return doc
+
         elements = doc.cssselect(self.selector)
 
         if self.multiple:

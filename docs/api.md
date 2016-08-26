@@ -67,7 +67,7 @@ Converts the extracted data into usable data. This can be overridden to create t
 ### Css(selector, ...)
 
 Pulls data from the document using a `selector`, and returns it as a string.
-Supports all additional constructor arguments defined by `ScrapedAttribute`.
+Supports all additional constructor arguments defined by `ScrapedAttribute`. If you pass an empty string, the entire document will be used. (useful in combination with `CssGroup`)
 
 ## CssFloat(selector, ...)
 
