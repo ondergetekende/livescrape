@@ -295,7 +295,8 @@ class CssGroup(Css):
 
 class CssLink(Css):
     def __init__(self, selector, page_factory, referer=True, **kwargs):
-        super(CssLink, self).__init__(selector, attribute="href", **kwargs)
+        kwargs.setdefault('attribute', 'href')
+        super(CssLink, self).__init__(selector, **kwargs)
         self.page_factory = page_factory
         self.referer = referer
 
